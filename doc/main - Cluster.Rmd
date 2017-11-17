@@ -1,0 +1,182 @@
+---
+title: "Project 4 - Example Main Script"
+author: "Jing Wu, Tian Zheng"
+date: "3/22/2017"
+output: pdf_document
+---
+
+## Step 0: Load the packages, specify directories and commands
+
+```{r}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(text2vec, dplyr, qlcMatrix, kernlab, knitr)
+
+```
+
+Commands:
+
+```{r}
+#Read raw data files
+read.movie.data = F
+read.ms.data = F
+
+#Reshape data to wide format
+reshape.movie = F
+reshape.ms = F
+
+#Load Rdata
+load.movie.data = F
+load.ms.data = F
+```
+
+## Step 1: Load and process the data
+
+Read Movie Dataset:
+
+```{r}
+if (read.movie.data){
+
+  #Read dataset from directory
+  movie.data.train <- read.csv("../data/movie_data_train.csv")
+  movie.data.test <- read.csv("../data/movie_data_test.csv")
+  
+  movie.data.train <- movie.data.train[,-1]
+  movie.data.test <- movie.data.test[,-1]
+  
+  #Check dataset information
+  paste("Data Dimension:", dim(movie.data.train)[1], "x", dim(movie.data.train)[2])
+  paste("Number of Unique Movies:",length(unique(movie.data.train[,2])))
+  paste("Number of Unique Users:",length(unique(movie.data.train[,3])))
+  paste("Number of 0 ratings:", sum(movie.data.train[,4] == 1))
+
+}
+```
+
+Read ms Dataset:
+
+```{r}
+if (read.ms.data){
+
+  #Read dataset from directory
+  ms.data.train <- read.csv("../data/ms_data_train.csv")
+  ms.data.test <- read.csv("../data/ms_data_test.csv")
+  
+  ms.data.train <- ms.data.train[,-1]
+  ms.data.test <- ms.data.test[,-1]
+  
+  #Reshapes TRAIN dataframe -------------------------------------------
+  User <- rep(NA, nrow(ms.data.train))
+  
+  for(i in 1:nrow(ms.data.train)){
+    User[i] <- ifelse(ms.data.train[i,1] == "C", ms.data.train[i,3], User[i-1])
+  }
+  ms.data.train$User <- User
+  ms.data.train <- ms.data.train[ms.data.train$V1 == "V",]
+  ms.data.train <- ms.data.train[,-1]
+  
+  names(ms.data.train) <- c("Vroot", "Visits", "User")
+  
+  #Reshapes TEST dataframe -------------------------------------------
+  User <- rep(NA, nrow(ms.data.test))
+  
+  for(i in 1:nrow(ms.data.test)){
+    User[i] <- ifelse(ms.data.test[i,1] == "C", ms.data.test[i,3], User[i-1])
+  }
+  ms.data.test$User <- User
+  ms.data.test <- ms.data.test[ms.data.test$V1 == "V",]
+  ms.data.test <- ms.data.test[,-1]
+  
+  names(ms.data.test) <- c("Vroot", "Visits", "User")
+  
+  #Clean
+  rm(User, i)
+}
+```
+
+Reshape and save movie data:
+
+```{r}
+if(reshape.movie){
+
+  #Reshapes dataframe
+  movie.data.train <- reshape(movie.data.train, 
+                              v.names = "Score", 
+                              direction = "wide", 
+                              idvar = "User", 
+                              timevar = "Movie")
+  
+   movie.data.test <- reshape(movie.data.test, 
+                              v.names = "Score", 
+                              direction = "wide", 
+                              idvar = "User", 
+                              timevar = "Movie") 
+  
+  
+  
+  paste("Data Dimension:", dim(movie.data.train)[1], "x", dim(movie.data.train)[2])
+  paste("Data Dimension:", dim(movie.data.test)[1], "x", dim(movie.data.test)[2])
+  
+  #Save files to data directory
+  save(movie.data.train, file = "../data/movie_data_train_wide.Rdata")
+  save(movie.data.test, file = "../data/movie_data_test_wide.Rdata")
+  }
+```
+
+Reshape and save ms data:
+
+```{r}
+if(reshape.ms){
+
+  #Reshapes dataframe
+  ms.data.train <- reshape(ms.data.train, 
+                              v.names = "Visits", 
+                              direction = "wide", 
+                              idvar = "User", 
+                              timevar = "Vroot")
+  
+   ms.data.test <- reshape(ms.data.test, 
+                              v.names = "Visits", 
+                              direction = "wide", 
+                              idvar = "User", 
+                              timevar = "Vroot") 
+  
+  
+  
+  paste("Data Dimension:", dim(ms.data.train)[1], "x", dim(ms.data.train)[2])
+  paste("Data Dimension:", dim(ms.data.test)[1], "x", dim(ms.data.test)[2])
+  
+  #Save files to data directory
+  save(ms.data.train, file = "../data/ms_data_train_wide.Rdata")
+  save(ms.data.test, file = "../data/ms_data_test_wide.Rdata")
+  }
+```
+
+
+## Step 2: Implementation
+
+Load Data:
+
+```{r}
+#Load Rdata files
+if(load.movie.data){
+  load("../data/movie_data_train_wide.Rdata")
+  load("../data/movie_data_test_wide.Rdata")
+}
+
+if(load.ms.data){
+  load("../data/ms_data_train_wide.Rdata")
+  load("../data/ms_data_test_wide.Rdata")
+}
+```
+
+Implement Clustering Model:
+
+```{r}
+
+```
+
+
+## Step 3: Evaluation
+
+
+
