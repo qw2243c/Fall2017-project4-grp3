@@ -27,6 +27,9 @@ reshape.ms = F
 #Load Rdata
 load.movie.data = F
 load.ms.data = F
+
+#Implementation algorythims
+model.clustering = F
 ```
 
 ## Step 1: Load and process the data
@@ -172,7 +175,94 @@ if(load.ms.data){
 Implement Clustering Model:
 
 ```{r}
+cluster.model.train <- function(data.set, C, replace.na = T, tau = 0.01){
+}
+  
+  #Debbuging-------
+  #C = 3
+  #data.set = ms.data.train
+  #replace.na = T
+  #tau = 0.01
 
+  #Set-Up------------------------------------------------
+  if(replace.na){
+    data.set[is.na(data.set)] <- 0
+  }
+
+  user <- data.set[,1]
+  data.set <- data.set[,-1]
+  
+  k <- sort(unique(unlist(c(data.set[,-1]))))
+  N <- nrow(data.set)
+  
+  #Step 1------------------------------------------------
+  mu <- rep(1/C, C)
+  lambda <- array(1/length(k), dim = c(length(k), ncol(data.set), C))
+
+  pi <- matrix(NA, nrow = N, ncol = C)
+  pi.old <- matrix(0, nrow = N, ncol = C)
+  phi <- matrix(NA, nrow = N, ncol = C)
+  D <- matrix(NA, nrow = N, ncol = (length(k)))
+  iteration <- 1
+  d <- Inf
+  #------------------------------------------------------
+  
+while(d[length(d)] > tau & iteration < 10){
+    
+  #Step 2------------------------------------------------
+  
+  for(i in 1:N){
+
+    index <- which(data.set[i,] != 0) 
+    D <- unlist(as.numeric(data.set[i, index]))
+    
+    aux <- 0
+    
+    for(j in 1:length(index)) {
+      
+      aux <- aux + log(lambda[ D[j], index[j], ]) 
+    }
+    
+    phi[i, ] <- exp(aux)
+  }
+  
+  num <- mu * phi
+  den <- apply(num, 1, sum)   
+
+  pi <- num/den
+  #------------------------------------------------------
+  
+  #Step 3------------------------------------------------
+  
+  mu <- apply(pi, 2, sum)/N
+  
+  for(ce in 1:C){
+  
+    for(j in 1:ncol(data.set)){
+      
+    l <- t(pi[, ce]) %*% ifelse(data.set[, j] == 1, 1, 0)
+      
+    lambda[2, j, ce] <- l/sum(pi[ ,ce])
+    lambda[1, j, ce] <- 1 - lambda[2, j, ce] 
+      
+    }
+  }
+  
+  d <- c(d, norm(pi - pi.old))
+  
+  pi.old <- pi
+  
+  iteration <- iteration + 1
+}
+  
+    
+```
+
+```{r}
+if(model.clustering){
+  
+  
+}
 ```
 
 
