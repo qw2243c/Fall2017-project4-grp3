@@ -1,7 +1,7 @@
 # Project 4: Collaborative Filtering
 
 ### [Project Description](doc/project4_desc.md)
-## [5 Academic papers](doc/papers)
+### [5 Academic papers](doc/Papers)
 Term: Fall 2017
 
 + Team #
