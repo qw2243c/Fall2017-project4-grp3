@@ -26,10 +26,10 @@ reshape.ms = F
 
 #Load Rdata
 load.movie.data = F
-load.ms.data = F
+load.ms.data = T
 
 #Implementation algorythims
-model.clustering = F
+model.clustering = T
 ```
 
 ## Step 1: Load and process the data
@@ -175,98 +175,158 @@ if(load.ms.data){
 Implement Clustering Model:
 
 ```{r}
-cluster.model.train <- function(data.set, C, replace.na = T, tau = 0.01){
-}
+#Training function
+cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.01){
   
-  #Debbuging-------
-  #C = 3
-  #data.set = ms.data.train
-  #replace.na = T
-  #tau = 0.01
-
-  #Set-Up------------------------------------------------
-  if(replace.na){
-    data.set[is.na(data.set)] <- 0
-  }
-
-  user <- data.set[,1]
-  data.set <- data.set[,-1]
+    #Debbuging-------
+    #C = 3
+    #data.set = ms.data.train
+    #replace.na = T
+    #tau = 0.01
   
-  k <- sort(unique(unlist(c(data.set[,-1]))))
-  N <- nrow(data.set)
+    #Set-Up------------------------------------------------
+    if(replace.na){
+      data.set[is.na(data.set)] <- 0
+    }
   
-  #Step 1------------------------------------------------
-  mu <- rep(1/C, C)
-  lambda <- array(1/length(k), dim = c(length(k), ncol(data.set), C))
-
-  pi <- matrix(NA, nrow = N, ncol = C)
-  pi.old <- matrix(0, nrow = N, ncol = C)
-  phi <- matrix(NA, nrow = N, ncol = C)
-  D <- matrix(NA, nrow = N, ncol = (length(k)))
-  iteration <- 1
-  d <- Inf
-  #------------------------------------------------------
-  
-while(d[length(d)] > tau & iteration < 10){
+    user <- data.set[,1]
+    data.set <- data.set[,-1]
     
-  #Step 2------------------------------------------------
+    websites <- names(data.set)
+    k <- sort(unique(unlist(c(data.set[,-1]))))
+    N <- nrow(data.set)
+    
+    #Step 1------------------------------------------------
+    mu <- rep(1/C, C)
+    lambda <- array(1/length(k), dim = c(length(k), ncol(data.set), C))
+  
+    pi <- matrix(NA, nrow = N, ncol = C)
+    pi.old <- matrix(0, nrow = N, ncol = C)
+    phi <- matrix(NA, nrow = N, ncol = C)
+    D <- matrix(NA, nrow = N, ncol = (length(k)))
+    iteration <- 1
+    d <- Inf
+    #------------------------------------------------------
+    
+  while(d[length(d)] > tau & iteration < 10){
+      
+    #Step 2------------------------------------------------
+    
+    for(i in 1:N){
+      
+      aux <- c(0,0,0)
+      
+      for(j in 1:ncol(data.set)) {
+        
+        aux <- aux + log(lambda[ data.set[i,j] + 1, j, ]) 
+      }
+      
+      phi[i, ] <- exp(aux)
+    }
+    
+    num <- mu * phi
+    den <- apply(num, 1, sum)   
+  
+    pi <- num/den
+    #------------------------------------------------------
+    
+    #Step 3------------------------------------------------
+    
+    mu <- apply(pi, 2, sum)/N
+    
+    for(ce in 1:C){
+    
+      for(j in 1:ncol(data.set)){
+        
+      l <- t(pi[, ce]) %*% ifelse(data.set[, j] == 1, 1, 0)
+        
+      lambda[2, j, ce] <- l/sum(pi[ ,ce])
+      lambda[1, j, ce] <- 1 - lambda[2, j, ce] 
+        
+      }
+    }
+    
+    d <- c(d, norm(pi - pi.old))
+    
+    pi.old <- pi
+    
+    iteration <- iteration + 1
+  }
+    
+  return(list("pi" = pi, "lambda" = lambda, "mu" = mu, "iterations" = iteration, 
+              "progression" = d, "websites" = websites, "user_list" = user))
+}  
+
+#Testing function
+cluster.model.test <- function(data.set.test, lambda, mu, pi, websites, replace.na = T){
+  
+  #Debugging
+  #data.set.test <- ms.data.test
+  
+  #SetUp-----------------------------------------------------------------
+  if(replace.na){
+    data.set.test[is.na(data.set.test)] <- 0
+  }
+  
+  user <- data.set.test[,1]
+  data.set.test <- data.set.test[,-1]
+    
+  websites.test <- names(data.set.test)
+  websites.test.index <- match(websites.test, websites)
+  
+  N <- nrow(data.set.test)
+  predictions <- as.data.frame(matrix(NA, nrow = N, ncol = ncol(data.set.test)))
+  names(predictions) <- websites.test
+  #-----------------------------------------------------------------------
+  
+  #Assign users to cluster and make prediction------------------------------------------------
+    
+  user.cluster <- apply(pi, 1, which.max)
+  error <- 0
   
   for(i in 1:N){
-
-    index <- which(data.set[i,] != 0) 
-    D <- unlist(as.numeric(data.set[i, index]))
-    
-    aux <- 0
-    
-    for(j in 1:length(index)) {
+    for(j in 1:ncol(predictions)){
       
-      aux <- aux + log(lambda[ D[j], index[j], ]) 
+      cluster <- user.cluster[i]
+      index <- websites.test.index[j]
+      predictions[i,j] <- which.max(lambda[, index, cluster]) - 1    
+      
+      error <- error + ifelse(predictions[i,j] == data.set.test[i,j], 0, 1)
     }
-    
-    phi[i, ] <- exp(aux)
   }
   
-  num <- mu * phi
-  den <- apply(num, 1, sum)   
-
-  pi <- num/den
+  error.rate <- error/(N * ncol(data.set.test))
   #------------------------------------------------------
   
-  #Step 3------------------------------------------------
-  
-  mu <- apply(pi, 2, sum)/N
-  
-  for(ce in 1:C){
-  
-    for(j in 1:ncol(data.set)){
-      
-    l <- t(pi[, ce]) %*% ifelse(data.set[, j] == 1, 1, 0)
-      
-    lambda[2, j, ce] <- l/sum(pi[ ,ce])
-    lambda[1, j, ce] <- 1 - lambda[2, j, ce] 
-      
-    }
-  }
-  
-  d <- c(d, norm(pi - pi.old))
-  
-  pi.old <- pi
-  
-  iteration <- iteration + 1
+  return(list("predictions" = predictions, "error" = error, "error.rate" = error.rate))
 }
-  
-    
 ```
+
+Test Cluster Model:
 
 ```{r}
 if(model.clustering){
   
+  trained.cluster.model <- cluster.model.train(ms.data.train, C = 3)
   
+  l <- trained.cluster.model$lambda
+  m <- trained.cluster.model$mu
+  p <- trained.cluster.model$pi
+  w <- trained.cluster.model$websites
+  
+  testing <- cluster.model.test(ms.data.test, lambda = l, mu = m, pi = p, websites = w)
+  
+  paste("Error rate:",round(testing$error.rate * 100,2), "%")
+  
+  rm(l, m, p, w)
 }
 ```
 
 
 ## Step 3: Evaluation
+
+
+
 
 
 
