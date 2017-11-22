@@ -176,13 +176,14 @@ Implement Clustering Model:
 
 ```{r}
 #Training function
-cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.01){
+cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.iter = 20){
   
     #Debbuging-------
     #C = 3
     #data.set = ms.data.train
     #replace.na = T
     #tau = 0.01
+    #max.iter = 50
   
     #Set-Up------------------------------------------------
     if(replace.na){
@@ -197,9 +198,21 @@ cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.01){
     N <- nrow(data.set)
     
     #Step 1------------------------------------------------
-    mu <- rep(1/C, C)
-    lambda <- array(1/length(k), dim = c(length(k), ncol(data.set), C))
-  
+    u <- runif(C)
+    mu <- u/sum(u)
+    
+    lambda <- array(NA, dim = c(length(k), ncol(data.set), C))
+    
+    for(ce in 1:C){
+      u <- runif(ncol(data.set))
+      u2 <- 1 - u
+      
+      lambda[1,,ce] <- u
+      lambda[2,,ce] <- u2
+    }
+    
+    rm(u, u2)
+    
     pi <- matrix(NA, nrow = N, ncol = C)
     pi.old <- matrix(0, nrow = N, ncol = C)
     phi <- matrix(NA, nrow = N, ncol = C)
@@ -208,7 +221,7 @@ cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.01){
     d <- Inf
     #------------------------------------------------------
     
-  while(d[length(d)] > tau & iteration < 10){
+  while(d[length(d)] > tau & iteration < max.iter){
       
     #Step 2------------------------------------------------
     
@@ -321,7 +334,6 @@ if(model.clustering){
   rm(l, m, p, w)
 }
 ```
-
 
 ## Step 3: Evaluation
 
