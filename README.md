@@ -12,7 +12,7 @@ Term: Fall 2017
 	+ Henrique Saboya
 	+ team member 4
 	+ team member 5
-+ Project summary: The goal of this project is to compare a pair of algorithms from the collaborative filtering literature. One of the algorithms is a model-based and the other is a memory-based algorithm. For the model-based we used a naive bayseian clustering approach, with __ clusters and a hal-life of 7 itens, achieving a rank score of __ (parameters have been chosen based on cross-validation).
++ Project summary: The goal of this project is to compare a pair of algorithms from the collaborative filtering literature. One of the algorithms is a model-based and the other is a memory-based algorithm. For the model-based we used a naive bayseian clustering approach, with 4 clusters and a hal-life of 7 itens, achieving a rank score of 40.62 (best parameters have been chosen based on cross-validation).
 	
 **Contribution statement**: ([default](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
 
