@@ -30,6 +30,7 @@ load.ms.data = T
 
 #Implementation algorythims
 model.clustering = T
+cross.validate.model.clustering = T
 ```
 
 ## Step 1: Load and process the data
@@ -176,14 +177,14 @@ Implement Clustering Model:
 
 ```{r}
 #Training function
-cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.iter = 20){
+cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.iter = 15){
   
     #Debbuging-------
     #C = 3
     #data.set = ms.data.train
     #replace.na = T
-    #tau = 0.01
-    #max.iter = 50
+    #tau = 0.1
+    #max.iter = 20
   
     #Set-Up------------------------------------------------
     if(replace.na){
@@ -227,7 +228,7 @@ cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.
     
     for(i in 1:N){
       
-      aux <- c(0,0,0)
+      aux <- rep(0, C)
       
       for(j in 1:ncol(data.set)) {
         
@@ -264,6 +265,8 @@ cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.
     pi.old <- pi
     
     iteration <- iteration + 1
+    
+    print(paste("Iteration:", iteration, "norm d:", d[length(d)]))
   }
     
   return(list("pi" = pi, "lambda" = lambda, "mu" = mu, "iterations" = iteration, 
@@ -271,7 +274,7 @@ cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.
 }  
 
 #Testing function
-cluster.model.test <- function(data.set.test, lambda, mu, pi, websites, replace.na = T){
+cluster.model.test <- function(data.set.test, lambda, mu, pi, websites, replace.na = T, alpha = 5){
   
   #Debugging
   #data.set.test <- ms.data.test
@@ -295,41 +298,101 @@ cluster.model.test <- function(data.set.test, lambda, mu, pi, websites, replace.
   #Assign users to cluster and make prediction------------------------------------------------
     
   user.cluster <- apply(pi, 1, which.max)
-  error <- 0
   
   for(i in 1:N){
     for(j in 1:ncol(predictions)){
       
       cluster <- user.cluster[i]
       index <- websites.test.index[j]
-      predictions[i,j] <- which.max(lambda[, index, cluster]) - 1    
-      
-      error <- error + ifelse(predictions[i,j] == data.set.test[i,j], 0, 1)
+      predictions[i,j] <- as.numeric(which.max(lambda[, index, cluster]) - 1)    
+
     }
   }
   
-  error.rate <- error/(N * ncol(data.set.test))
   #------------------------------------------------------
   
-  return(list("predictions" = predictions, "error" = error, "error.rate" = error.rate))
+  #Rank scoring------------------------------------------
+  
+  d <- 0 #Neutral vote
+  C <- c(dim(lambda)[3])
+  
+  lambda.minor <- lambda[, websites.test.index,]
+  recommendations <- matrix(NA, nrow = C, ncol = alpha)
+  votes <- matrix(NA, nrow = C, ncol = alpha)
+  
+  for(ce in 1:C){
+    recommendations[ce,] <- order(lambda.minor[,,ce][2,], decreasing = T)[1:alpha]
+    a <- recommendations[ce,]
+    votes[ce,] <- (lambda.minor[,,ce][2,])[a]
+  }
+  rm(a)
+  
+  votes[votes >= 0.5] <- 1
+  votes[votes < 0.5] <- 0
+  
+  ra <- matrix(NA, nrow = nrow(predictions), ncol = 2)
+  names(ra) <- c("Ra", "Ra.max")
+  
+  for(i in 1:nrow(predictions)){
+    
+    cluster <- user.cluster[i] 
+    jay <- 1:alpha
+    ra[i,1] <- sum(apply(data.set.test[i, recommendations[cluster,]], 2, max, 0)/(2^((jay-1)/(alpha-1))))  
+    
+    jay2 <- 1:sum(data.set.test[i,])
+    ra[i,2] <- sum(rep(1,sum(data.set.test[i,]))/(2^((jay2-1)/(alpha-1))))
+  }
+  
+  R <- round(100 * sum(ra[,1])/sum(ra[,2]), 2)
+  print(paste("Rank score:", R))
+  #------------------------------------------------------
+  
+  return(list("predictions" = predictions, "R" = R))
 }
+
 ```
 
 Test Cluster Model:
 
 ```{r}
 if(model.clustering){
+  best.C <- 4
   
-  trained.cluster.model <- cluster.model.train(ms.data.train, C = 3)
+  if(cross.validate.model.clustering){
+    r <- c()
+    parameters <- c(2,4,6,8)
+    for(par in parameters){
+      trained.cluster.model <- cluster.model.train(ms.data.train, C = par)
+      
+        l <- trained.cluster.model$lambda
+        m <- trained.cluster.model$mu
+        p <- trained.cluster.model$pi
+        w <- trained.cluster.model$websites
+       
+        testing <- cluster.model.test(ms.data.test, lambda = l, mu = m, pi = p, websites = w, alpha = 7)
+        r <- c(r, testing$R)
+        print(paste("For number of clusters equal to:", par, "Rank score:", testing$R))
+    }
+    
+    t <- matrix(NA, ncol = length(parameters), nrow = 2)
+    t[1,] <- parameters 
+    t[2,] <- r
+    save(t, file = "../output/cv_cluster_rank_score.Rdata")
+    write.csv(t, file = "../output/cv_cluster_rank_score.csv")
+    
+    best.C <- which.max(r) + 1
+  }
   
-  l <- trained.cluster.model$lambda
-  m <- trained.cluster.model$mu
-  p <- trained.cluster.model$pi
-  w <- trained.cluster.model$websites
-  
-  testing <- cluster.model.test(ms.data.test, lambda = l, mu = m, pi = p, websites = w)
-  
-  paste("Error rate:",round(testing$error.rate * 100,2), "%")
+  if(!cross.validate.model.clustering){
+    trained.cluster.model <- cluster.model.train(ms.data.train, C = best.C)
+    
+    l <- trained.cluster.model$lambda
+    m <- trained.cluster.model$mu
+    p <- trained.cluster.model$pi
+    w <- trained.cluster.model$websites
+    
+    testing <- cluster.model.test(ms.data.test, lambda = l, mu = m, pi = p, websites = w, alpha = 7)
+  }
   
   rm(l, m, p, w)
 }
