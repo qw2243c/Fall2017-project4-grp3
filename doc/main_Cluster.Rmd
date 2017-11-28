@@ -2,14 +2,16 @@
 title: "Project 4 - Example Main Script"
 author: "Jing Wu, Tian Zheng"
 date: "3/22/2017"
-output: pdf_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ## Step 0: Load the packages, specify directories and commands
 
 ```{r}
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load(text2vec, dplyr, qlcMatrix, kernlab, knitr)
+#if (!require("pacman")) install.packages("pacman")
+#pacman::p_load(text2vec, dplyr, qlcMatrix, kernlab, knitr)
 
 ```
 
@@ -177,7 +179,7 @@ Implement Clustering Model:
 
 ```{r}
 #Training function
-cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.iter = 15){
+cluster.model.train <- function(data.set, C = 3, replace.na = T, tau = 0.1, max.iter = 12){
   
     #Debbuging-------
     #C = 3
@@ -339,8 +341,9 @@ cluster.model.test <- function(data.set.test, lambda, mu, pi, websites, replace.
     jay <- 1:alpha
     ra[i,1] <- sum(apply(data.set.test[i, recommendations[cluster,]], 2, max, 0)/(2^((jay-1)/(alpha-1))))  
     
-    jay2 <- 1:sum(data.set.test[i,])
-    ra[i,2] <- sum(rep(1,sum(data.set.test[i,]))/(2^((jay2-1)/(alpha-1))))
+    a <- min(sum(data.set.test[i,]), alpha)
+    jay2 <- 1:a
+    ra[i,2] <- sum(rep(1, a)/(2^((jay2-1)/(alpha-1))))
   }
   
   R <- round(100 * sum(ra[,1])/sum(ra[,2]), 2)
@@ -352,15 +355,17 @@ cluster.model.test <- function(data.set.test, lambda, mu, pi, websites, replace.
 
 ```
 
+## Step 3: Evaluation
+
 Test Cluster Model:
 
 ```{r}
 if(model.clustering){
-  best.C <- 4
+  best.C <- 2
   
   if(cross.validate.model.clustering){
     r <- c()
-    parameters <- c(2,4,6,8)
+    parameters <- c(2,4,6)
     for(par in parameters){
       trained.cluster.model <- cluster.model.train(ms.data.train, C = par)
       
@@ -380,25 +385,28 @@ if(model.clustering){
     save(t, file = "../output/cv_cluster_rank_score.Rdata")
     write.csv(t, file = "../output/cv_cluster_rank_score.csv")
     
+    print(t)
     best.C <- which.max(r) + 1
+    best.C
   }
   
-  if(!cross.validate.model.clustering){
-    trained.cluster.model <- cluster.model.train(ms.data.train, C = best.C)
-    
-    l <- trained.cluster.model$lambda
-    m <- trained.cluster.model$mu
-    p <- trained.cluster.model$pi
-    w <- trained.cluster.model$websites
-    
-    testing <- cluster.model.test(ms.data.test, lambda = l, mu = m, pi = p, websites = w, alpha = 7)
-  }
+
+  trained.cluster.model <- cluster.model.train(ms.data.train, C = best.C)
+  
+  l <- trained.cluster.model$lambda
+  m <- trained.cluster.model$mu
+  p <- trained.cluster.model$pi
+  w <- trained.cluster.model$websites
+  
+  testing <- cluster.model.test(ms.data.test, lambda = l, mu = m, pi = p, websites = w, alpha = 7)
+  
   
   rm(l, m, p, w)
+  
+  save(trained.cluster.model, file = "../output/trained_cluster_model.Rdata")
 }
 ```
 
-## Step 3: Evaluation
 
 
 
