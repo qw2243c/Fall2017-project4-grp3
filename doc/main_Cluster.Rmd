@@ -32,7 +32,7 @@ load.ms.data = T
 
 #Implementation algorythims
 model.clustering = T
-cross.validate.model.clustering = T
+cross.validate.model.clustering = F
 ```
 
 ## Step 1: Load and process the data
@@ -361,7 +361,7 @@ Test Cluster Model:
 
 ```{r}
 if(model.clustering){
-  best.C <- 2
+  best.C <- 4
   
   if(cross.validate.model.clustering){
     r <- c()
