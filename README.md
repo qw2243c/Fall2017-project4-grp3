@@ -26,6 +26,8 @@ For the model-based we used a naive bayseian clustering approach, with 4 cluster
 + Jordan Leung
         
 	+ Implementation of memory-based algorithms (Similarity Weight: Mean square difference, SimRank)
+	+ Implement parallel processing into algorithms
+	+ Helped with creating slides
 + Jingkai Li          
                 
 	+ Implementation of memory-based algorithms (Rating Normalization: Deviation for Mean, Z-score) 
