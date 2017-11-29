@@ -18,7 +18,7 @@ For the memory-based we used different component combinations,
 
 For the model-based we used a naive bayseian clustering approach, with 4 clusters and a hal-life of 8 itens, achieving a rank score of 47.28 (best parameters have been chosen based on cross-validation).
 
-![image](figs/cluster_result.png)
+![image](figs/cluster_results.png)
 	
 **Contribution statement**: ([default](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
 
