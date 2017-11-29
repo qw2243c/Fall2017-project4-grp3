@@ -30,8 +30,12 @@ For the model-based we used a naive bayseian clustering approach, with 4 cluster
 	+ Helped with creating slides
 + Jingkai Li          
                 
+	+ Data transformation
 	+ Implementation of memory-based algorithms (Rating Normalization: Deviation for Mean, Z-score) 
-	+ Evaluation for memory-based algorithms (different algorithms and component combinations)
+	+ Evaluation for memory-based algorithms (AUC, MAE)
+	+ Implementation of memory-based algorithms (Similarity Weight: Vector Similarity)
+	+ Generate README.md
+	
 + Henrique Saboya  
                
 	+ Data preprocessing, include data splitting and cleaning  
@@ -42,6 +46,7 @@ For the model-based we used a naive bayseian clustering approach, with 4 cluster
         
 	+ Implementation of memory-based algorithms (Selecting Neighbours: Weight Threshold, Best-n-estimator, Combined)
 	+ Make the slides and give the presentation
+	+ Implementation of memory-based algorithms (Similarity Weight: Vector Similarity)
 	+ Generate README.md
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
