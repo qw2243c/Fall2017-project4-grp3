@@ -497,7 +497,7 @@ if(model.clustering){
 
 ```{r}
 if(model.sim.rank){
-  graph <- movie.data.train[1:40, 1:40]
+  graph <- movie.data.train[1:1000, 1:1000]
 
 graph[is.na(graph)] <- 0
 
@@ -518,15 +518,12 @@ users <- graph[,1]
 movies <- colnames(graph[,-1])
 
 simrank(0.8, 1)
-}
-```
 
-```{r}
 colnames(user_sim) <- users
 user_sim <- cbind(users, user_sim)
 write.csv(user_sim, file='../output/usersim.csv', row.names = FALSE)
+}
 ```
-
 
 
 
