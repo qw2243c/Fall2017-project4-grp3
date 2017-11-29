@@ -1,25 +1,3 @@
-# formatting training dataset
-
-movie.data.train[is.na(movie.data.train)] <- 0
-
-movie.data.train[,-1][movie.data.train[,-1] < 5] <- 0
-movie.data.train[,-1][movie.data.train[,-1] >= 5] <- 1
-
-# set subset as graph
-graph <- movie.data.train
-
-# set similarity matrices to be calculated
-calc_user = T
-calc_movie = F
-
-# initialize the similarity matrices
-user_sim <- diag(dim(graph)[1])
-movie_sim <- diag(dim(graph)[2])
-
-# create list of users and movies
-users <- graph[,1]
-movies <- colnames(graph[,-1])
-
 # returns the corresponding row or column for a user or movie.
 get_movies_num <- function(user){
   u_i <- match(user, users)
@@ -33,12 +11,12 @@ get_users_num <- function(movie){
 
 # return the users or movies with a non zero
 get_movies <- function(user){
-  series = get_movie_num(user)
+  series = get_movies_num(user)
   return(movies[which(series!=0)])
 }
 
 get_users <- function(movie){
-  series = get_user_num(movie)
+  series = get_users_num(movie)
   return(users[which(series!=0)])
 }
 
@@ -81,35 +59,59 @@ simrank <- function(C=0.8, times = 1){
   for (run in 1:times){
     
     if(calc_user){
-    new_user_sim <- diag(dim(graph)[1])
     for (ui in users){
       for (uj in users){
         i = match(ui, users)
         j = match(uj, users)
-        new_user_sim[i, j] <- user_simrank(ui, uj, C)
+        user_sim[i, j] <<- user_simrank(ui, uj, C)
       }
     }
-    user_sim <<- new_user_sim
     }
     if(calc_movie){
-    new_movie_sim <- diag(dim(graph)[2])
     for (mi in movies){
       for (mj in movies){
         i = match(mi, movies)
         j = match(mj, movies)
-        new_movie_sim[i, j] <- movie_simrank(mi, mj, C)
+        movie_sim[i, j] <<- movie_simrank(mi, mj, C)
       }
     }
-    movie_sim <<- new_movie_sim
     }
   }
 }
 
+# formatting training dataset
+
+graph <- movie.data.train[1:40, 1:40]
+
+graph[is.na(graph)] <- 0
+
+graph[,-1][graph[,-1] < 5] <- 0
+graph[,-1][graph[,-1] >= 5] <- 1
+
+
+# set similarity matrices to be calculated
+calc_user = T
+calc_movie = F
+
+# initialize the similarity matrices
+user_sim <- diag(dim(graph)[1])
+movie_sim <- diag(dim(graph)[2])
+
+# create list of users and movies
+users <- graph[,1]
+movies <- colnames(graph[,-1])
+
 simrank(0.8, 1)
 
-user_sim
+if(calc_user){
 colnames(user_sim) <- users
 user_sim <- cbind(users, user_sim)
-write.csv(user_sim, file='usersim.csv')
+write.csv(user_sim, file='usersim.csv', row.names = FALSE)
+}
 
+if(calc_movie){
+  colnames(movie_sim) <- movies
+  movie_sim <- cbind(movies, movie_sim)
+  write.csv(movie_sim, file='moviesim.csv', row.names = FALSE)
+}
 
