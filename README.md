@@ -34,12 +34,12 @@ For the model-based we used a naive bayseian clustering approach, with 4 cluster
 	+ Data preprocessing, include data splitting and cleaning  
 	+ Implementation of model-based algorithms (cluster model) 
 	+ Evaluation for model-based algorithms (cluster model)	
-	+ Generate README.Rmd
+	+ Generate README.md
 + Yijia  Li
         
 	+ Implementation of memory-based algorithms (Selecting Neighbours: Weight Threshold, Best-n-estimator, Combined)
 	+ Make the slides and give the presentation
-	+ Generate README.Rmd
+	+ Generate README.md
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
