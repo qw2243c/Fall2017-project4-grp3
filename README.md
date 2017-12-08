@@ -21,7 +21,7 @@ For the model-based we used a naive bayseian clustering approach, with 4 cluster
 
 ![image](figs/cluster-results.jpg)
 	
-**Contribution statement**: ([default](doc/a_note_on_contributions.md)) Four team members (Jordan Leung, Jingkai Li, Henrique Saboya, Yijia  Li) contributed equally in all stages of this project. Four team members approve our work presented in this GitHub repository including this contributions statement. 
+**Contribution statement**: ([default](doc/a_note_on_contributions.md)) Four team members (Jordan Leung, Jingkai Li, Henrique Saboya, Yijia  Li) contributed equally in all stages of this project. Five team members approve our work presented in this GitHub repository including this contributions statement. 
 
 + Jordan Leung
         
@@ -48,6 +48,13 @@ For the model-based we used a naive bayseian clustering approach, with 4 cluster
 	+ Make the slides and give the presentation
 	+ Implementation of memory-based algorithms (Similarity Weight: Vector Similarity)
 	+ Generate README.md
+
++ Hongjie Ren
+	
+	+ Data processing and cleaning (sample data used for own purpose)
+	+ Developed Vector Similarity methods purly based on papers(Not been used)
+	+ Developed Spearman Similarity methods from paper(Not been used)
+	+ Developed Entropy Weights method from paper(Not been used)
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
