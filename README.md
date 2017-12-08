@@ -52,9 +52,9 @@ For the model-based we used a naive bayseian clustering approach, with 4 cluster
 + Hongjie Ren
 	
 	+ Data processing and cleaning (sample data used for own purpose)
-	+ Developed Vector Similarity methods purly based on papers(Not been used)
-	+ Developed Spearman Similarity methods from paper(Not been used)
-	+ Developed Entropy Weights method from paper(Not been used)
+	+ Developed Vector Similarity methods purly based on papers and test with own data 
+	+ Developed Spearman Similarity and Entropy Weights methods from paper(Not been used)
+	+ Developed significance weighting and variance weighting method from paper(Not been used)
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
