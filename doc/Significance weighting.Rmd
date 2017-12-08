@@ -1,0 +1,31 @@
+---
+title: "Signigicance Weighting"
+author: "Hongjie Ren"
+date: "2017Äê11ÔÂ15ÈÕ"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### Significance Weighting
+
+```{r}
+signigicance_weight <- function(dim_mat, mat = movie_train){
+  mat_weight = matrix(1, nrow=dim_mat, ncol=dim_mat)
+  for (i in 1:(dim_mat-1)){
+    for (j in (i+1):dim_mat){
+      weight <- significance_weight_assign(i, j, mat=mat)
+      mat_weight[i, j] <- weight
+      mat_weight[j, i] <- weight
+    }
+    print(i)
+    print(Sys.time())
+    print(weight)
+  }
+  return(mat_weight)
+}
+
+```
+

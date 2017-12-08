@@ -1,0 +1,67 @@
+---
+title: "Project 4"
+author: "Hongjie Ren"
+date: "2017Äê11ÔÂ15ÈÕ"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#Similarity Weights Calculation
+
+Step 1:
+Load Data:
+
+```{r}
+#Load Rdata files
+if(load.movie.data){
+  load("../data/movie_data_train_wide.Rdata")
+  load("../data/movie_data_test_wide.Rdata")
+}
+
+if(load.ms.data){
+  load("../data/ms_data_train_wide.Rdata")
+  load("../data/ms_data_test_wide.Rdata")
+}
+```
+
+Step 2:
+Vector Similarity
+```{r}
+# returns the corresponding row or column for a user.
+get_movies_num <- function(user){
+  u_i <- match(user, users)
+  return(movie.data.train[u_i,-1])
+}
+
+
+# Vector Similarity for each user 
+# initialize the similarity matrices
+user_similar <- diag(dim(movie.data.train)[1])
+
+#define similarity function
+vector_similarity <- function(row_a,row_b){
+  row_a <- as.numeric(ifelse(is.na(row_a),0,row_a))
+  row_b <- as.numeric(ifelse(is.na(row_b),0,row_b))
+  output=0
+  for (i in length(row_a)){
+    output=output+(row_a[i]/sqrt(sum(row_a^2)))*(row_b[i]/sqrt(sum(row_b^2)))
+  }
+  return(output)
+}
+
+
+for (i in nrow(user_similar)){
+  for (j in ncol(user_similar)){
+    if (i==j){
+      user_similar[i,j]=1
+    } else{
+      user_similar[i,j]=vector_similarity(get_movies_num(i),get_movies_num(j))
+    }
+  }
+}
+
+```

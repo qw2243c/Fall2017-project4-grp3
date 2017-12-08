@@ -1,0 +1,29 @@
+---
+title: "Spearman Similarity"
+author: "Hongjie Ren"
+date: "2017Äê11ÔÂ15ÈÕ"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### Spearman Similarity
+
+```{r}
+
+spearman_weight <- function(matrix){
+  file=deparse(substitute(matrix))
+  file_name= paste0("./output/spearman_",file,".csv")
+  
+  matrix[is.na(matrix)] = 0
+  matrix = t(matrix)
+  w = cor(matrix,use="everything",method="spearman")
+  
+  write.csv(w,file=file_name)
+}
+
+w1 = spearman_weight(train1)
+w2 = spearman_weight(train2)
+```
